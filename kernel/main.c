@@ -1,19 +1,44 @@
 #include "print.h"
+#include "thread.h"
 #include "interrupt.h"
-#include "debug.h"
-#include "string.h"
 #include "memory.h"
-int main(){
+#include "timer.h"
+#include "debug.h"
+void k_thread_a(void*);
+void k_thread_b(void*);
+int main(void) {
+   put_str("I am kernel\n");
+   idt_init();
+   mem_init();
+   thread_init();
+   timer_init();
+   thread_start("k_thread_a", 31, k_thread_a, "argA ");
+   thread_start("k_thread_b", 8, k_thread_b, "argB ");
 
-    idt_init();
-    int a[20];
-
-    mem_init();
-	void* addr = get_kernel_pages(3);
-   put_str("\n get_kernel_page start vaddr is ");
-   put_int((uint32_t)addr);
-   put_str("\n");
-    //ASSERT(1==2);
-    while(1);
+   intr_enable();	// 打开中断,使时钟中断起作用
+   while(1) {
+      put_str("Main ");
+   };
+   return 0;
 }
 
+/* 在线程中运行的函数 */
+void k_thread_a(void* arg) {     
+ASSERT(intr_get_status()==INTR_ON);
+/* 用void*来通用表示参数,被调用的函数知道自己需要什么类型的参数,自己转换再用 */
+   char* para = arg;
+   while(1) {
+      put_str(para);
+   }
+}
+
+/* 在线程中运行的函数 */
+void k_thread_b(void* arg) {     
+/* 用void*来通用表示参数,被调用的函数知道自己需要什么类型的参数,自己转换再用 */
+ASSERT(intr_get_status()==INTR_ON);
+   char* para = arg;
+	
+   while(1) {
+      put_str(para);
+   }
+}

@@ -12,5 +12,6 @@ Intr_Statu intr_get_status();
 Intr_Statu intr_set_status(Intr_Statu);
 Intr_Statu intr_enable();
 Intr_Statu intr_disable();
+void register_handler(uint8_t vector_no, intr_handler function);
 #endif
 
